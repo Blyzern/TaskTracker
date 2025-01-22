@@ -4,8 +4,8 @@ TaskTrackerFrame:SetWidth(400)
 TaskTrackerFrame:SetHeight(300)
 TaskTrackerFrame:SetPoint("LEFT", UIParent, "LEFT", 0, 0)
 TaskTrackerFrame:SetBackdrop({
-    bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+    bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+    edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
     tile = true,
     tileSize = 16,
     edgeSize = 16,
@@ -32,9 +32,16 @@ TaskInput:SetMaxLetters(100)
 
 -- Add Button for tasks
 local AddButton = CreateFrame("Button", nil, TaskTrackerFrame, "UIPanelButtonTemplate")
-AddButton:SetSize(30, 30)
+AddButton:SetSize(24, 24)
 AddButton:SetPoint("LEFT", TaskInput, "RIGHT", 5, 0)
-AddButton:SetText("Add")
+AddButton:SetNormalTexture("Interface\\Buttons\\UI-PlusButton-Up")
+AddButton:SetPushedTexture("Interface\\Buttons\\UI-PlusButton-Down")
+AddButton:SetHighlightTexture("Interface\\Buttons\\UI-PlusButton-Hilight")
+-- Adjust texture insets to avoid cutting
+AddButton:GetNormalTexture():SetTexCoord(0, 1, 0, 1)
+AddButton:GetPushedTexture():SetTexCoord(0, 1, 0, 1)
+AddButton:GetHighlightTexture():SetTexCoord(0, 1, 0, 1)
+
 AddButton:SetNormalFontObject("GameFontNormal")
 AddButton:SetHighlightFontObject("GameFontHighlight")
 
@@ -73,28 +80,67 @@ local function RefreshTaskList()
     end
 
     local yOffset = 0
+    local containerWidth = 340
     -- Create a task frame for each task in the list
-    for index, taskText in ipairs(tasks) do
+    for index, task in ipairs(tasks) do
         local TaskFrame = CreateFrame("Frame", nil, TaskListContent)
-        TaskFrame:SetSize(340, 30)
+        TaskFrame:SetSize(containerWidth, 30)
         TaskFrame:SetPoint("TOPLEFT", TaskListContent, "TOPLEFT", 0, -yOffset)
+        
+        local Checkedbutton = CreateFrame("CheckButton", nil, TaskFrame, "UICheckButtonTemplate")
+        Checkedbutton:SetSize(23, 23)
+        Checkedbutton:SetPoint("LEFT", TaskFrame, "LEFT", 5, 0)
+        Checkedbutton:SetChecked(task.checked)
+
+        -- Toggle the checkbox state and save it when clicked
+        Checkedbutton:SetScript("OnClick", function()
+            task.checked = not task.checked -- Toggle the state
+            TaskTrackerDB.tasksList[index].checked = task.checked -- Save to database
+        end)
+
+        -- Optional: Add tooltip to explain functionality
+        Checkedbutton:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            GameTooltip:SetText("Mark this task as completed.")
+            GameTooltip:Show()
+        end)
+        Checkedbutton:SetScript("OnLeave", function(self)
+            GameTooltip:Hide()
+        end)
 
         local TaskLabel = TaskFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
         TaskLabel:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
-        TaskLabel:SetPoint("LEFT", TaskFrame, "LEFT", 10, 0)
-        TaskLabel:SetText(taskText)
+        TaskLabel:SetPoint("LEFT", Checkedbutton, "RIGHT", 5, 0)
+        TaskLabel:SetWidth(containerWidth - 55)
+        TaskLabel:SetWordWrap(true)
+        TaskLabel:SetJustifyH("LEFT") -- Align text to the left
+        TaskLabel:SetText(task.text)
+
+        -- Calculate the height of the text
+        local textHeight = TaskLabel:GetStringHeight()
+        local frameHeight = math.max(20, textHeight + 5) -- Minimum height of 20, add padding
+        TaskFrame:SetHeight(frameHeight)
 
         local DeleteButton = CreateFrame("Button", nil, TaskFrame, "UIPanelButtonTemplate")
-        DeleteButton:SetSize(20, 20)
+        DeleteButton:SetSize(25, 25)
         DeleteButton:SetPoint("RIGHT", TaskFrame, "RIGHT", -10, 0)
-        DeleteButton:SetText("X")
+        -- Set the "X" button textures
+        DeleteButton:SetNormalTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
+        DeleteButton:SetPushedTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Down")
+        DeleteButton:SetHighlightTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight")
+
+        -- Adjust texture insets to avoid cutting
+        DeleteButton:GetNormalTexture():SetTexCoord(0, 1, 0, 1)
+        DeleteButton:GetPushedTexture():SetTexCoord(0, 1, 0, 1)
+        DeleteButton:GetHighlightTexture():SetTexCoord(0, 1, 0, 1)
+
         DeleteButton:SetScript("OnClick", function()
             table.remove(tasks, index)
             TaskTrackerDB["tasksList"] = tasks
             RefreshTaskList() -- Refresh the list after removal
         end)
 
-        yOffset = yOffset + 35 -- Increase the yOffset to position the next task below the previous one
+        yOffset = yOffset + frameHeight -- Increase the yOffset to position the next task below the previous one
     end
 
     -- Update the height of the content frame based on the number of tasks
@@ -104,6 +150,10 @@ end
 
 local CloseButton = CreateFrame("Button", nil, TaskTrackerFrame, "UIPanelCloseButton")
 CloseButton:SetPoint("TOPRIGHT", TaskTrackerFrame, "TOPRIGHT", -5, -5)
+CloseButton:SetScript("OnClick", function ()
+    TaskTrackerDB.isVisible = false
+    TaskTrackerFrame:Hide()
+end)
 
 -- Create the minimap button
 local TaskTrackerMinimapButton = CreateFrame("Button", "TaskTrackerMinimapButton", Minimap)
@@ -158,11 +208,12 @@ AddButton:SetScript("OnClick", function()
             return
         end
     end
-
-    table.insert(tasks, taskText) -- Add the task to the list
+    local newTask = { text = taskText, checked = false }
+    table.insert(tasks, newTask) -- Add the task to the list
+    TaskTrackerDB["tasksList"] = tasks
     TaskInput:SetText("") -- Clear the input box
+    TaskInput:ClearFocus()
     RefreshTaskList() -- Refresh the task list
-    TaskTrackerDB["tasksList"] = tasks -- Save new task in the database
 end)
 
 -- Load Saved Tasks on Addon Load
