@@ -1,0 +1,10 @@
+## Interface: 30300
+## Title: TaskTracker
+## Version: 0.8
+## Author: Blyzern
+## Notes: A Friendly UI To Keep Track Of Your Tasks!
+## DefaultState: enabled
+## SavedVariables: TaskTrackerDB
+
+
+TaskTracker.lua
