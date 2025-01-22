@@ -90,7 +90,7 @@ local function RefreshTaskList()
         DeleteButton:SetText("X")
         DeleteButton:SetScript("OnClick", function()
             table.remove(tasks, index)
-            TaskTrackerDB = tasks
+            TaskTrackerDB["tasksList"] = tasks
             RefreshTaskList() -- Refresh the list after removal
         end)
 
@@ -161,8 +161,8 @@ AddButton:SetScript("OnClick", function()
 
     table.insert(tasks, taskText) -- Add the task to the list
     TaskInput:SetText("") -- Clear the input box
-    TaskTrackerDB = tasks -- Save new task in the database
     RefreshTaskList() -- Refresh the task list
+    TaskTrackerDB["tasksList"] = tasks -- Save new task in the database
 end)
 
 -- Load Saved Tasks on Addon Load
@@ -170,13 +170,17 @@ local function OnAddonLoaded(self, event, addon)
     if addon == "TaskTracker" then
         print(addon ..": LOADED_CORRECTLY")
         if not TaskTrackerDB then
-            TaskTrackerDB = {} -- Initialize database if empty
-            TaskTrackerDB["isVisible"] = true
+            TaskTrackerDB = {
+                ["tasksList"] = {},
+                ["isVisible"] = true
+            } -- Initialize database if empty
         end
-        tasks = TaskTrackerDB -- Load saved tasks into memory
+        tasks = TaskTrackerDB["tasksList"] -- Load saved tasks into memory
+        RefreshTaskList()
         if TaskTrackerDB["isVisible"] == true then
             TaskTrackerFrame:Show()
-            RefreshTaskList() -- Refresh the UI with loaded tasks
+        else
+            TaskTrackerFrame:Hide()
         end
         
     end
@@ -184,7 +188,7 @@ end
 
 -- Save Tasks on Logout
 local function OnPlayerLogout(self, event)
-    TaskTrackerDB = tasks -- Save current tasks to SavedVariables
+    TaskTrackerDB["tasksList"] = tasks -- Save current tasks to SavedVariables
 end
 
 -- Add a slash command to toggle the frame
