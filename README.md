@@ -1,6 +1,6 @@
 TaskTracker Addon for WoW: Wrath of the Lich King
 About the Author
-Hello, I'm Blyzern, and this is my first addon for World of Warcraft: Wrath of the Lich King (WotLK). I'm excited to share this project with you, and I hope it proves useful in helping you keep track of your tasks while adventuring through Azeroth.
+Hello, I'm Blyzern, and this is my addon for World of Warcraft: Wrath of the Lich King (WotLK). I'm excited to share this project with you, and I hope it proves useful in helping you keep track of your tasks while adventuring through Azeroth.
 
 As this is my first addon, it is still in development. There may be some changes, bug fixes, or improvements in future updates. I appreciate your patience and any feedback you may have!
 
