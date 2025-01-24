@@ -159,7 +159,7 @@ end)
 local TaskTrackerMinimapButton = CreateFrame("Button", "TaskTrackerMinimapButton", Minimap)
 TaskTrackerMinimapButton:SetSize(32, 32)  -- Set button size (32x32 pixels)
 TaskTrackerMinimapButton:SetPoint("TOPRIGHT", Minimap, "TOPRIGHT", -5, -5)  -- Position relative to the Minimap
-TaskTrackerMinimapButton:SetNormalTexture("Interface\\Icons\\INV_Misc_ScrollUnroll")  -- Icon texture
+TaskTrackerMinimapButton:SetNormalTexture("Interface\\AddOns\\TaskTracker\\Icons\\Minimap_icon.blp")  -- Icon texture
 TaskTrackerMinimapButton:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")  -- Highlight on hover
 TaskTrackerMinimapButton:SetPushedTexture("Interface\\Buttons\\Button-Pressed")  -- Button when clicked
 TaskTrackerMinimapButton:SetScript("OnEnter", function(self)
